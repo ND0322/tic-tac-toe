@@ -1,113 +1,144 @@
-// ==========================================================================
-// Global State Variables
-// ==========================================================================
-let board = ['', '', '', '', '', '', '', '', '']; // 9 empty spaces
-let currentPlayer = 'X';
-let isGameActive = true;
+const board = []
+const symbols = ['X', 'O'];
+const colors = ["#FF746C", "#A7C7E7"];
 
-// ==========================================================================
-// DOM Elements
-// ==========================================================================
+for(let i = 0; i < 3; i++){
+    board[i] = [];
+
+    for(let j = 0; j < 3; j++) board[i][j] = '';
+}
+
+
+
+let turn = 1;
+let active = 1;
+let cnt = 0;
+
 const boardElement = document.getElementById('board');
 const statusElement = document.getElementById('status-message');
 const resetBtn = document.getElementById('reset-btn');
 
-// ==========================================================================
-// Initialization
-// ==========================================================================
 
-// Listen for the HTML document to fully load before running our JS
-document.addEventListener('DOMContentLoaded', initGame);
+document.addEventListener('DOMContentLoaded', init);
 
-/**
- * Sets up the initial game board by creating 9 div elements,
- * attaching click listeners to them, and putting them on the screen.
- */
-function initGame() {
-  // Clear any existing HTML inside the board container
-  // This is important for resetting the game
-  boardElement.innerHTML = '';
+function init(){
+    active = 1;
+    boardElement.innerHTML = '';
 
-  // Loop 9 times to create the 3x3 grid
-  for (let i = 0; i < 9; i++) {
-    // 1. Create a new div element
-    const cell = document.createElement('div');
-    
-    // 2. Add the 'cell' CSS class to it
-    cell.classList.add('cell');
-    
-    // 3. Store the index (0-8) inside the HTML element so we know which one was clicked
-    cell.dataset.index = i;
-    
-    // 4. Attach an event listener: When this cell is clicked, call handleCellClick
-    cell.addEventListener('click', handleCellClick);
-    
-    // 5. Append the cell to the board element in the DOM
-    boardElement.appendChild(cell);
+    turn = 1;
+
+    cnt = 0;
+
+    const t = document.getElementById("status-message");
+
+    t.textContent = "Player " + symbols[1-turn] + "'s Turn";
+
+
+    for(let i = 0; i < 3; i++){
+        for(let j = 0; j < 3; j++){
+            board[i][j] = '';
+            const cell = document.createElement("div");
+            cell.classList.add("cell");
+            cell.dataset.xcoord = i;
+            cell.dataset.ycoord = j;
+
+            cell.addEventListener('click', onClick);
+            boardElement.appendChild(cell);
+
+        }
+    }
+
+    resetBtn.addEventListener("click", onReset);
+}
+
+function onClick(event){
+    cnt++;
+    const element = event.target;
+
+    const x = element.dataset.xcoord;
+    const y = element.dataset.ycoord;
+
+    if(!active) return;
+    if(board[x][y] !== '') return;
+
+
+    turn ^= 1;
+    board[x][y] = symbols[turn];
+
+    const t = document.getElementById("status-message");
+
+    t.textContent = "Player " + symbols[1-turn] + "'s Turn";
+    element.textContent = symbols[turn];
+    element.style.color = colors[turn];
+
+    //const symb = document.createElement("p");
+    //symb.textContent = symbols[turn];
+    //element.appendChild(symb);
+
+    if(checkWin()){
+      console.log("won");
+      active = 0;
+      t.textContent = "Player " + symbols[turn] + " Won";
+      return;
+    }
+
+    if(cnt == 9){
+      console.log("tie");
+      t.textContent = "Tie";
+      active = 0;
+    }
+
+   
+
+}
+
+function checkWin(){
+  for(let i = 0; i < 3; i++){
+    let flag = 1;
+
+    if(board[i][0] == '') continue;
+    for(let j = 0; j < 3; j++) flag &= board[i][j] == board[i][0];
+    if(flag) return 1;
   }
 
-  // Attach event listener to the reset button
-  resetBtn.addEventListener('click', resetGame);
-}
-
-// ==========================================================================
-// Game Logic & Event Handling
-// ==========================================================================
-
-/**
- * Handles what happens when a user clicks on a cell.
- * @param {Event} event - The click event object
- */
-function handleCellClick(event) {
-  // 'event.target' refers to the exact HTML element that was clicked
-  const clickedCell = event.target;
-  
-  // Retrieve the index we stored earlier and convert it to a number
-  const cellIndex = parseInt(clickedCell.dataset.index);
-
-  // Check if the cell is already filled OR if the game is over.
-  // If either is true, exit the function early (do nothing).
-  if (board[cellIndex] !== '' || isGameActive === false) {
-    return;
+  for(let j = 0; j < 3; j++){
+    let flag = 1;
+    if(board[0][j] == '') continue;
+    for(let i = 0; i < 3; i++) flag &= board[i][j] == board[0][j];
+    if(flag) return 1;
   }
 
-  // TODO 1: Update the internal state (the 'board' array) with the current player
-  
-  // TODO 2: Update the DOM to reflect the internal state! 
-  // you may need to update both inner html and css classes of DOM elements
 
-  // TODO 3: Check for (and possibly handle) a winner (Call the checkWin() function)
+  //check diagonals
+
+  let flag = 1;
+  if(board[0][0] !== ''){
+    for(let i = 0; i < 3; i++){
+      flag &= board[i][i] == board[0][0];
+    }
   
-  // TODO 4: Check for (and possibly handle) a tie (Call the checkTie() function)
-  
-  // TODO 5: Swap the currentPlayer from 'X' to 'O' or 'O' to 'X'
-  
-  // TODO 6: Update the statusElement to show whose turn it is now
+
+    if(flag) return 1;
+  }
+
+  if(board[0][2] !== ''){
+    flag = 1;
+    for(let i = 0; i < 3; i++){
+      flag &= board[i][3-i-1] == board[0][2];
+    }
+
+    if(flag) return 1;
+  }
+  return 0;
+
+
 }
 
-/**
- * Checks for a winner.
- * @returns {boolean} true if there is a winner, false otherwise
- */
-function checkWin() {
-  // TODO
-  return false;
+
+function onReset(){
+    init();
 }
 
-/**
- * Checks for a tie game.
- * @returns {boolean} true if it's a tie, false otherwise
- */
-function checkTie() {
-  // TODO
-  return false; 
-}
 
-/**
- * Resets all state variables and the DOM to start a new game.
- */
-function resetGame() {
-  // TODO: reset internal state
-  // To clear the DOM easily, just call initGame() again to rebuild the empty cells!
-  initGame();
-}
+
+
