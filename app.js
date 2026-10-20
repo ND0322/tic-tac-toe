@@ -52,7 +52,7 @@ function init(){
 }
 
 function onClick(event){
-    cnt++;
+    
     const element = event.target;
 
     const x = element.dataset.xcoord;
@@ -60,6 +60,8 @@ function onClick(event){
 
     if(!active) return;
     if(board[x][y] !== '') return;
+
+    cnt++;
 
 
     turn ^= 1;
@@ -75,8 +77,12 @@ function onClick(event){
     //symb.textContent = symbols[turn];
     //element.appendChild(symb);
 
-    if(checkWin()){
+
+    const winningCells = checkWin();
+    if(winningCells){
       console.log("won");
+      const [start, , end] = winningCells;
+      drawLine(start[0], end[0], start[1], end[1], colors[turn]);
       active = 0;
       t.textContent = "Player " + symbols[turn] + " Won";
       return;
@@ -94,45 +100,95 @@ function onClick(event){
 
 function checkWin(){
   for(let i = 0; i < 3; i++){
-    let flag = 1;
+    const l = []
 
     if(board[i][0] == '') continue;
-    for(let j = 0; j < 3; j++) flag &= board[i][j] == board[i][0];
-    if(flag) return 1;
+    for(let j = 0; j < 3; j++){
+      if(board[i][0] == board[i][j]) l.push([i,j]);
+    }
+    if(l.length == 3) return l;
   }
 
   for(let j = 0; j < 3; j++){
-    let flag = 1;
+    const l = []
+
     if(board[0][j] == '') continue;
-    for(let i = 0; i < 3; i++) flag &= board[i][j] == board[0][j];
-    if(flag) return 1;
+    for(let i = 0; i < 3; i++){
+      if(board[0][j] == board[i][j]) l.push([i,j]);
+    }
+    if(l.length == 3) return l;
   }
 
 
   //check diagonals
 
-  let flag = 1;
-  if(board[0][0] !== ''){
-    for(let i = 0; i < 3; i++){
-      flag &= board[i][i] == board[0][0];
-    }
   
+  if(board[0][0] !== ''){
+    const l = []
+    for(let i = 0; i < 3; i++){
+      if(board[i][i] == board[0][0]) l.push([i,i]);
+    }
 
-    if(flag) return 1;
+    if(l.length==3) return l;
+
   }
 
   if(board[0][2] !== ''){
-    flag = 1;
+    const l = [];
     for(let i = 0; i < 3; i++){
-      flag &= board[i][3-i-1] == board[0][2];
+      if(board[i][2-i] == board[0][2]) l.push([i,2-i]);
     }
 
-    if(flag) return 1;
+    if(l.length == 3) return l;
+    
   }
   return 0;
 
 
 }
+
+function drawLine(x1, x2, y1, y2, color){
+  const cells = boardElement.querySelectorAll('.cell');
+
+  const sc = cells[x1 * 3 + y1];
+  const ec = cells[x2 * 3 + y2];
+
+  const board = boardElement.getBoundingClientRect();
+  const srect = sc.getBoundingClientRect();
+  const erect = ec.getBoundingClientRect();
+
+  const cx1 = srect.left + srect.width / 2 - board.left;
+  const cy1 = srect.top + srect.height/2 - board.top;
+  const cx2 = erect.left + erect.width / 2 - board.left;
+  const cy2 = erect.top + erect.height/2 - board.top;
+
+  const dx = cx2 - cx1;
+  const dy = cy2 - cy1;
+
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const ux = dx / length;
+  const uy = dy / length;
+
+  const angle = Math.atan2(dy, dx);
+
+
+  const extension = Math.hypot(board.width, board.height);
+
+  const line = document.createElement('div');
+  line.classList.add('winning-line');
+  line.style.backgroundColor = color;
+
+  line.style.width = `${Math.hypot(dx, dy) + 2 * extension}px`;
+  line.style.left = `${cx1 - Math.cos(angle) * extension}px`;
+  line.style.top = `${cy1 - Math.sin(angle) * extension}px`;
+  line.style.transformOrigin = 'left center';
+  line.style.transform = `rotate(${angle}rad)`;
+
+  boardElement.appendChild(line);
+
+}
+
+
 
 
 function onReset(){

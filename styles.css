@@ -73,6 +73,10 @@ header h1 {
    Game Board (3x3 Grid)
    ========================================================================== */
 .board {
+  
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -106,3 +110,19 @@ header h1 {
 /* Colors for players */
 .cell.x { color: #f43f5e; }
 .cell.o { color: #3b82f6; }
+
+
+.winning-line {
+  position: absolute;
+  height: 5px;
+  border-radius: 10px;
+  z-index: 10;
+  transform-origin: left center;
+  pointer-events: none;
+  animation: draw-line 0.3s ease-out;
+}
+
+@keyframes draw-line {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
