@@ -87,6 +87,14 @@ header h1 {
   aspect-ratio: 1 / 1;
 }
 
+
+.cell {
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .cell {
   background-color: #0f172a;
   border-radius: 4px;
@@ -97,6 +105,7 @@ header h1 {
   font-weight: bold;
   cursor: pointer;
   user-select: none;
+  aspect-ratio: 1;
 }
 
 .cell:hover:not(.taken) {
@@ -111,6 +120,18 @@ header h1 {
 .cell.x { color: #f43f5e; }
 .cell.o { color: #3b82f6; }
 
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.controls .btn {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
 
 .winning-line {
   position: absolute;
